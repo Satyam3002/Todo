@@ -86,7 +86,6 @@ const Home = () => {
   
     {/* Search and New Task Section */}
     <div className="flex flex-col sm:flex-row items-start sm:items-center py-4 gap-y-4 sm:gap-y-0 sm:gap-x-16 w-full">
-      {/* Search Bar */}
       <div className="flex">
         <div className="flex items-center bg-black text-white rounded-xl overflow-hidden">
           <input
@@ -115,7 +114,6 @@ const Home = () => {
         </div>
       </div>
   
-      {/* New Task Button/Input */}
       <div className="flex">
         {showInputBox ? (
           <>
@@ -144,7 +142,6 @@ const Home = () => {
       </div>
     </div>
   
-    {/* Horizontal Line */}
     <hr className="my-6 border-black" />
   
     {/* Task List */}
