@@ -8,7 +8,7 @@ export default function Layout({ children }) {
         <head>
           <title>To-Do App</title>
         </head>
-        <body className="bg-gray-100">
+        <body className="bg-customBg">
           <main>{children}</main>
         </body>
       </html>

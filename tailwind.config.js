@@ -12,7 +12,8 @@ module.exports = {
       extend: {
         colors: {
             customPurple: '#b381da', 
-            customGreen: '#7fbb95'
+            customGreen: '#7fbb95',
+            customBg:'#60c0bf'
           },
       },
     },
