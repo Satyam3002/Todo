@@ -6,6 +6,7 @@ const Home = () => {
   const [newTask, setNewTask] = useState("");
   const [search, setSearch] = useState("");
   const [showInputBox, setShowInputBox] = useState(false);
+  const [filteredTasks, setFilteredTasks] = useState([]);
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -20,6 +21,7 @@ const Home = () => {
         const data = await response.json();
         if (Array.isArray(data)) {
           setTasks(data);
+          setFilteredTasks(data); // Set initial tasks to be displayed
         } else {
           console.error("Invalid JSON data:", data);
         }
@@ -41,6 +43,7 @@ const Home = () => {
     if (response.ok) {
       const data = await response.json();
       setTasks((prevTasks) => [...prevTasks, data]);
+      setFilteredTasks((prevTasks) => [...prevTasks, data]); // Update filtered tasks
       setNewTask("");
     } else {
       console.error("Error creating task:", response.status);
@@ -51,6 +54,7 @@ const Home = () => {
     const response = await fetch(`/api/tasks?id=${id}`, { method: "DELETE" });
     if (response.ok) {
       setTasks(tasks.filter((task) => task._id !== id));
+      setFilteredTasks(filteredTasks.filter((task) => task._id !== id)); // Update filtered tasks
     } else {
       console.error("Error deleting task:", response.status);
     }
@@ -71,94 +75,41 @@ const Home = () => {
           task._id === id ? { ...task, completed: updatedTask.completed } : task
         )
       );
+      setFilteredTasks(
+        filteredTasks.map((task) =>
+          task._id === id ? { ...task, completed: updatedTask.completed } : task
+        )
+      );
     } else {
       console.error("Error updating task:", response.status);
     }
   };
 
-  const filteredTasks = tasks.filter((task) =>
-    task.task.toLowerCase().includes(search.toLowerCase())
-  );
+  const handleSearch = () => {
+    const filtered = tasks.filter((task) =>
+      task.task.toLowerCase().includes(search.toLowerCase())
+    );
+    setFilteredTasks(filtered); // Set filtered tasks
+  };
 
   return (
     <div className="container w-full mx-auto px-4 sm:px-8 py-12">
-    <h1 className="text-3xl sm:text-4xl font-bold mb-6">Things to do:</h1>
-  
-    {/* Search and New Task Section */}
-    <div className="flex flex-col sm:flex-row items-start sm:items-center py-4 gap-y-4 sm:gap-y-0 sm:gap-x-16 w-full">
-      <div className="flex">
-        <div className="flex items-center bg-black text-white rounded-xl overflow-hidden">
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="p-2 h-12 w-full sm:w-72 text-black bg-yellow-300 outline-none placeholder-black"
-            placeholder="Search tasks..."
-          />
-          <div className="flex items-center justify-center px-3 bg-black">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M11 4a7 7 0 015.292 11.708l4.517 4.517a1 1 0 01-1.414 1.414l-4.517-4.517A7 7 0 1111 4z"
-              />
-            </svg>
-          </div>
-        </div>
-      </div>
-  
-      <div className="flex">
-        {showInputBox ? (
-          <>
+      <h1 className="text-3xl sm:text-4xl font-bold mb-6">Things to do:</h1>
+
+      {/* Search and New Task Section */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center py-4 gap-y-4 sm:gap-y-0 sm:gap-x-16 w-full">
+        <div className="flex">
+          <div className="flex items-center bg-black text-white rounded-xl overflow-hidden">
             <input
               type="text"
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              className="border border-black bg-yellow-300 p-2 rounded-md w-full sm:w-72"
-              placeholder="Enter new task..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="p-2 h-12 w-full sm:w-72 text-black bg-yellow-300 outline-none placeholder-black"
+              placeholder="Search tasks..."
             />
-            <button
-              onClick={addTask}
-              className="ml-2 bg-customGreen text-black px-8 sm:px-14 py-2 rounded-xl"
-            >
-              Add Task
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => setShowInputBox(true)}
-            className="bg-customGreen text-black px-12 sm:px-24 py-2 rounded-xl"
-          >
-            New Task
-          </button>
-        )}
-      </div>
-    </div>
-  
-    <hr className="my-6 border-black" />
-  
-    {/* Task List */}
-    <ul className="space-y-4">
-      {filteredTasks.map((task) => (
-        <li
-          key={task._id}
-          className={`flex flex-col sm:flex-row justify-between items-start sm:items-center bg-customPurple p-2 border border-black rounded-md ${
-            task.completed ? "bg-green-100 line-through" : ""
-          }`}
-        >
-          <span className="mb-2 sm:mb-0">{task.task}</span>
-          <div className="flex gap-x-2">
-            <button
-              onClick={() => toggleTaskCompletion(task._id)}
-              className="p-2 bg-green-500 text-white rounded-md flex items-center justify-center"
-              aria-label="Task Completed"
+            <div
+              className="flex items-center justify-center px-3 bg-black cursor-pointer"
+              onClick={handleSearch} // Trigger search when clicked
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -171,37 +122,100 @@ const Home = () => {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M12 6v6h4m-4 4a8 8 0 110-16 8 8 0 010 16z"
+                  d="M11 4a7 7 0 015.292 11.708l4.517 4.517a1 1 0 01-1.414 1.414l-4.517-4.517A7 7 0 1111 4z"
                 />
               </svg>
-            </button>
-  
-            <button
-              onClick={() => deleteTask(task._id)}
-              className="p-2 bg-red-500 text-white rounded-md flex items-center justify-center"
-              aria-label="Delete Task"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M4 7h16m-3-3a1 1 0 00-1-1H8a1 1 0 00-1 1m3 0h4"
-                />
-              </svg>
-            </button>
+            </div>
           </div>
-        </li>
-      ))}
-    </ul>
-  </div>
-  
+        </div>
+
+        <div className="flex">
+          {showInputBox ? (
+            <>
+              <input
+                type="text"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                className="border border-black bg-yellow-300 p-2 rounded-md w-full sm:w-72"
+                placeholder="Enter new task..."
+              />
+              <button
+                onClick={addTask}
+                className="ml-2 bg-customGreen text-black px-8 sm:px-14 py-2 rounded-xl"
+              >
+                Add Task
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => setShowInputBox(true)}
+              className="bg-customGreen text-black px-12 sm:px-24 py-2 rounded-xl"
+            >
+              New Task
+            </button>
+          )}
+        </div>
+      </div>
+
+      <hr className="my-6 border-black" />
+
+      {/* Task List */}
+      <ul className="space-y-4">
+        {filteredTasks.map((task) => (
+          <li
+            key={task._id}
+            className={`flex flex-col sm:flex-row justify-between items-start sm:items-center bg-customPurple p-2 border border-black rounded-md ${
+              task.completed ? "bg-green-100 line-through" : ""
+            }`}
+          >
+            <span className="mb-2 sm:mb-0">{task.task}</span>
+            <div className="flex gap-x-2">
+              <button
+                onClick={() => toggleTaskCompletion(task._id)}
+                className="p-2 bg-green-500 text-white rounded-md flex items-center justify-center"
+                aria-label="Task Completed"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M12 6v6h4m-4 4a8 8 0 110-16 8 8 0 010 16z"
+                  />
+                </svg>
+              </button>
+
+              <button
+                onClick={() => deleteTask(task._id)}
+                className="p-2 bg-red-500 text-white rounded-md flex items-center justify-center"
+                aria-label="Delete Task"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M4 7h16m-3-3a1 1 0 00-1-1H8a1 1 0 00-1 1m3 0h4"
+                  />
+                </svg>
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 };
 
